@@ -3,7 +3,7 @@ package com.eyup.library.entities;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -44,20 +44,20 @@ public class Book {
 	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE })
 	@JoinTable(name = "books_authors", joinColumns = { @JoinColumn(name = "book_id") }, inverseJoinColumns = {
 			@JoinColumn(name = "author_id") })
-	@JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
+	@JsonIgnore
 	private Author author;
 	
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinTable(name = "books_categories", joinColumns = { @JoinColumn(name = "book_id") }, inverseJoinColumns = {
 			@JoinColumn(name = "category_id") })
-	@JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
+	@JsonIgnore
 	private Set<Category> categories = new HashSet<Category>();
 	
 	@OneToOne(mappedBy="book",
 			cascade= {CascadeType.DETACH, CascadeType.MERGE,
 					CascadeType.PERSIST, CascadeType.REFRESH},
 			fetch=FetchType.LAZY)
-	@JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
+	@JsonIgnore
 	private Reserved reserved;
 	
 }

@@ -1,6 +1,6 @@
 package com.eyup.library.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -29,11 +29,11 @@ public class Reserved {
 	
 	@OneToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="book_id")
-	@JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
+	@JsonIgnore
 	private Book book;
 	
 	@OneToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="user_id")
-	@JsonIgnoreProperties(value = {"applications", "hibernateLazyInitializer"})
+	@JsonIgnore
 	private User user;
 }

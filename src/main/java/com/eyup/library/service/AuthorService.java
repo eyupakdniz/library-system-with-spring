@@ -1,11 +1,11 @@
 package com.eyup.library.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.eyup.library.entities.Author;
+import com.eyup.library.exception.AuthorNotFoundException;
 import com.eyup.library.repository.AuthorRepository;
 import com.eyup.library.request.AuthorCreateRequest;
 import com.eyup.library.request.AuthorUpdateRequest;
@@ -25,7 +25,7 @@ public class AuthorService {
 	}
 
 	public Author findAuthorById(Long id) {
-		return authorRepository.findById(id).orElse(null);
+		return authorRepository.findById(id).orElseThrow(() -> new AuthorNotFoundException("Author Not Found ID : " + id));
 	}
 	
 	public Author findAuthorByName(String firstName, String lastName) {
@@ -49,25 +49,16 @@ public class AuthorService {
 	}
 
 	public Author updateAuthor(AuthorUpdateRequest updateAuthor, Long id) {
-		Optional<Author> foundAuthor = authorRepository.findById(id);
-		if (foundAuthor.isPresent()) {
-			Author author = foundAuthor.get();
-			author.setFirstName(updateAuthor.getFirstName());
-			author.setLastName(updateAuthor.getLastName());
-			authorRepository.save(author);
-			return author;
-		}
-		return null;
+		Author foundAuthor = authorRepository.findById(id).orElseThrow(() -> new AuthorNotFoundException("Author Not Found ID : " + id));
+		foundAuthor.setFirstName(updateAuthor.getFirstName());
+		foundAuthor.setLastName(updateAuthor.getLastName());
+		authorRepository.save(foundAuthor);
+		return foundAuthor;
 	}
 
 	public void deleteAuthorById(Long id) {
-		Optional<Author> foundAuthor = authorRepository.findById(id);
-		if (foundAuthor.isPresent()) {
-			Author author = foundAuthor.get();
-			authorRepository.delete(author);
-		} else {
-			new RuntimeException(id + " not found.");
-		}
+		Author foundAuthor = authorRepository.findById(id).orElseThrow(() -> new AuthorNotFoundException("Author Not Found ID : " + id));
+		authorRepository.delete(foundAuthor);
 		
 	}
 

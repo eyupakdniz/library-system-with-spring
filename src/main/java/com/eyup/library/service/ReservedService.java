@@ -1,7 +1,6 @@
 package com.eyup.library.service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.eyup.library.entities.Book;
 import com.eyup.library.entities.Reserved;
 import com.eyup.library.entities.User;
+import com.eyup.library.exception.ReservedNotFoundException;
 import com.eyup.library.repository.ReservedRepository;
 import com.eyup.library.request.ReservedCreateRequest;
 
@@ -32,7 +32,7 @@ public class ReservedService {
 	}
 
 	public Reserved findReservedById(Long id) {
-		return reservedRepository.findById(id).orElse(null);
+		return reservedRepository.findById(id).orElseThrow(() -> new ReservedNotFoundException("Reserved Not Found ID : " + id));
 	}
 
 	public Reserved createReserved(ReservedCreateRequest reservedCreateRequest) {
@@ -45,26 +45,25 @@ public class ReservedService {
 	}
 
 	public void deleteBookById(Long id) {
-		Optional<Reserved> found = reservedRepository.findById(id);
-		if (found.isPresent()) {
-			Reserved reserved  = found.get();
-			reservedRepository.delete(reserved);
-		} else {
-			new RuntimeException(id + " not found.");
-		}
+		Reserved found = reservedRepository.findById(id).orElseThrow(() -> new ReservedNotFoundException("Reserved Not Found ID : " + id));
+			reservedRepository.delete(found);
 		
 	}
+	
 	public List<Book> findAllreceivableBooks() {
-		List<Reserved> reservedBooks =reservedRepository.findAll();
+		List<Reserved> reservedBooks = reservedRepository.findAll();
         
-        List<Book> allBooks = bookService.findAllBooks();
-        
-        List<Book> availableBooks = allBooks.stream()
-            .filter(book -> reservedBooks.stream()
-                .noneMatch(reserved -> reserved.getBook().equals(book)))
-            .collect(Collectors.toList());
-        
-        return availableBooks;
+	    List<Book> allBooks = bookService.findAllBooks();
+	    
+	    List<Long> reservedBookIds = reservedBooks.stream()
+	        .map(reserved -> reserved.getBook().getId())
+	        .collect(Collectors.toList());
+	    
+	    List<Book> availableBooks = allBooks.stream()
+	        .filter(book -> !reservedBookIds.contains(book.getId()))
+	        .collect(Collectors.toList());
+	    
+	    return availableBooks;
 	}
 
 	

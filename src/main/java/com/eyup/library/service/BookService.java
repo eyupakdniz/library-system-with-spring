@@ -1,14 +1,12 @@
 package com.eyup.library.service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.eyup.library.entities.Author;
 import com.eyup.library.entities.Book;
-import com.eyup.library.entities.Reserved;
+import com.eyup.library.exception.BookNotFoundException;
 import com.eyup.library.repository.BookRepository;
 import com.eyup.library.request.BookCreateRequest;
 import com.eyup.library.request.BookUpdateRequest;
@@ -17,12 +15,10 @@ import com.eyup.library.request.BookUpdateRequest;
 public class BookService {
 	
 	private BookRepository bookRepository;
-	//private CategoryService categoryService;
 	private AuthorService authorService;
 
-	public BookService(BookRepository bookRepository, /*CategoryService categoryService,*/ AuthorService authorService) {
+	public BookService(BookRepository bookRepository, AuthorService authorService) {
 		this.bookRepository = bookRepository;
-		//this.categoryService = categoryService;
 		this.authorService = authorService;
 	}
 
@@ -31,11 +27,10 @@ public class BookService {
 	}
 
 	public Book findBookById(Long id) {
-		return bookRepository.findById(id).orElse(null);
+		return bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException("Book Not Found ID : " + id));
 	}
 /*
 	public Book searchBook(Long id) {
-		
 		return null;
 	}
 */
@@ -47,33 +42,24 @@ public class BookService {
 		book.setIsbn(createBook.getIsbn());
 		book.setNumberOfpages(createBook.getNumberOfpages());
 		book.setAuthor(author);
-		//book.setCategories(createBook.getCategories());
 		return bookRepository.save(book);
 	}
 
 	public Book updateBook(BookUpdateRequest updateBook, Long id) {
 		Author author = authorService.findAuthorByName(updateBook.getAuthorFirstName(),updateBook.getAuthorLastName());
-		Optional<Book> found= bookRepository.findById(id);
-		if(found.isPresent()) {
-			Book book = found.get();
-			book.setName(updateBook.getName());
-			book.setDescription(updateBook.getDescription());
-			book.setIsbn(updateBook.getIsbn());
-			book.setNumberOfpages(updateBook.getNumberOfpages());
-			book.setAuthor(author);
-			return bookRepository.save(book);
-		}
- 		return null;
+		Book found= bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException("Book Not Found ID : " + id));
+		found.setName(updateBook.getName());
+		found.setDescription(updateBook.getDescription());
+		found.setIsbn(updateBook.getIsbn());
+		found.setNumberOfpages(updateBook.getNumberOfpages());
+		found.setAuthor(author);
+		return bookRepository.save(found);
+
 	}
 
 	public void deleteBookById(Long id) {
-		Optional<Book> foundbook = bookRepository.findById(id);
-		if (foundbook.isPresent()) {
-			Book book = foundbook.get();
-			bookRepository.delete(book);
-		} else {
-			new RuntimeException(id + " silmek için bulunamadı.");
-		}
+		Book foundbook = bookRepository.findById(id).orElseThrow(() -> new BookNotFoundException("Book Not Found ID : " + id));
+		bookRepository.delete(foundbook);
 		
 	}
 
